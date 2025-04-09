@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>{{ title }}</h1>
+    <a href="{{ url_for('tickets.create_ticket') }}" class="btn btn-success">Neues Ticket erstellen</a>
+</div>
+
+<form method="GET" action="{{ url_for('tickets.ticket_overview') }}" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label for="status" class="form-label">Status</label>
+        <select name="status" id="status" class="form-select">
+            {% for s in statuses %}
+                <option value="{{ s }}" {% if s == current_status %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="search" class="form-label">Suche</label>
+        <input type="text" name="search" id="search" class="form-control" placeholder="Suchen..." value="{{ current_search or '' }}">
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Filtern/Suchen</button>
+    </div>
+     {% if current_status or current_search %}
+     <div class="col-12">
+        <a href="{{ url_for('tickets.ticket_overview') }}" class="btn btn-secondary btn-sm">Filter zurücksetzen</a>
+     </div>
+     {% endif %}
+</form>
+
+{% if tickets %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Betreff</th>
+                <th>Status</th>
+                <th>Zugewiesen an</th>
+                <th>Erstellt von</th>
+                <th>Letzte Änderung</th>
+                <th>Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.id }}</td>
+                <td>
+                    <a href="{{ url_for('tickets.view_ticket', ticket_id=ticket.id) }}">{{ ticket.subject }}</a>
+                    {# Hier könnte Logik für Hierarchie-Einrückung hin #}
+                </td>
+                <td>
+                    <span class="badge
+                        {% if ticket.status == 'Neu' %} bg-primary
+                        {% elif ticket.status == 'In Bearbeitung' %} bg-warning text-dark
+                        {% elif ticket.status == 'Warten' %} bg-info text-dark
+                        {% elif ticket.status == 'KI' %} bg-secondary
+                        {% elif ticket.status == 'Geschlossen' %} bg-success
+                        {% else %} bg-light text-dark {% endif %}">
+                        {{ ticket.status }}
+                    </span>
+                </td>
+                <td>{{ ticket.assignee.username if ticket.assignee else 'Niemand' }}</td>
+                <td>{{ ticket.creator.username }}</td>
+                <td>{{ ticket.updated_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>
+                    <a href="{{ url_for('tickets.view_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-primary">Ansehen</a>
+                    {# Beispiel Bearbeiten Link (nur für Admins/Techniker) #}
+                    {# {% if current_user.role in ['Administrator', 'Techniker'] %}
+                       <a href="#" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+                    {% endif %} #}
+                </td>
+            </tr>
+            {# Hier könnten rekursiv Untertickets gerendert werden #}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if pagination %}
+<nav aria-label="Ticket Paginierung">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('tickets.ticket_overview', page=pagination.prev_num, status=current_status, search=current_search) if pagination.has_prev else '#' }}" aria-label="Zurück">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    {% for page_num in pagination.iter_pages() %}
+      {% if page_num %}
+        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('tickets.ticket_overview', page=page_num, status=current_status, search=current_search) }}">{{ page_num }}</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('tickets.ticket_overview', page=pagination.next_num, status=current_status, search=current_search) if pagination.has_next else '#' }}" aria-label="Weiter">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<p class="text-center">Keine Tickets gefunden, die den Kriterien entsprechen.</p>
+{% endif %}
+
+{% endblock %}

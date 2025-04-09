@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %} {# Beispiel für Makro-Nutzung #}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<hr>
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST" action="{{ url_for('tickets.create_ticket') }}" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+
+            {{ render_field(form.subject, extra_classes='is-required') }} {# Beispiel mit Makro #}
+            <div class="mb-3">
+                {{ form.requester_email.label(class="form-label") }} <span class="text-danger">*</span>
+                {# Feld ist readonly, wenn E-Mail vom eingeloggten User kommt #}
+                {{ form.requester_email(class="form-control " + ("is-invalid" if form.requester_email.errors else ""), readonly=True if current_user.is_authenticated else False) }}
+                {% if form.requester_email.errors %}
+                    <div class="invalid-feedback">{% for error in form.requester_email.errors %}<span>{{ error }}</span>{% endfor %}</div>
+                {% endif %}
+            </div>
+            {{ render_field(form.description, extra_classes='is-required', rows=6) }}
+             <div class="mb-3">
+                {{ form.attachment.label(class="form-label") }}
+                {{ form.attachment(class="form-control " + ("is-invalid" if form.attachment.errors else "")) }}
+                {% if form.attachment.errors %}
+                    <div class="invalid-feedback">{% for error in form.attachment.errors %}<span>{{ error }}</span>{% endfor %}</div>
+                {% endif %}
+                {# Korrigierte Zeile mit der übergebenen Variable #}
+                 <small class="form-text text-muted">Max. Dateigröße: {{ max_upload_size }} MB</small>
+             </div>
+            {{ render_field(form.anydesk_id) }}
+
+             <div class="d-grid gap-2 mt-4">
+                 {{ form.submit(class="btn btn-primary") }}
+                 <a href="{{ url_for('tickets.ticket_overview') }}" class="btn btn-secondary">Abbrechen</a>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div class="alert alert-info">
+            <h4 class="alert-heading">Hinweise</h4>
+            <p>Bitte füllen Sie alle mit <span class="text-danger">*</span> markierten Felder aus.</p>
+            <p>Beschreiben Sie Ihr Anliegen möglichst detailliert.</p>
+         </div>
+    </div>
+</div>
+{% endblock %}

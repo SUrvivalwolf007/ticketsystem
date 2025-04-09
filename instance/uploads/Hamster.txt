@@ -1,0 +1,77 @@
+package HamsterControl;
+
+import Client.ChatClient;
+
+public class Hamster {
+    private ChatClient chatClient;
+
+    // Statusinformationen
+    private int reihe; // Aktuelle Reihe
+    private int spalte; // Aktuelle Spalte
+    private int blickrichtung; // 0 = Norden, 1 = Osten, 2 = Süden, 3 = Westen
+
+    // Konstruktor zur Initialisierung
+    public Hamster(ChatClient chatClient) {
+
+        this.chatClient = chatClient;
+        this.reihe = 0; // Initialposition
+        this.spalte = 0; // Initialposition
+        this.blickrichtung = 1; // Blickrichtung Norden
+    }
+
+    // Vorwärts bewegen
+    public void vor() {
+        chatClient.sendTextMessage("hamster24ws", "vor");
+        System.out.println("vor");
+
+        // Aktualisiere die Position basierend auf der Blickrichtung
+        switch (blickrichtung) {
+            case 0 -> reihe--; // Norden
+            case 1 -> spalte++; // Osten
+            case 2 -> reihe++; // Süden
+            case 3 -> spalte--; // Westen
+        }
+    }
+
+    // Nach links drehen
+    public void linksum() {
+        chatClient.sendTextMessage("hamster24ws", "linksUm");
+        System.out.println("linksUm");
+
+        // Aktualisiere die Blickrichtung (nach links drehen)
+        blickrichtung = (blickrichtung + 3) % 4;
+    }
+
+    // Korn aufnehmen
+    public void nimm() {
+        chatClient.sendTextMessage("hamster24ws", "nimm");
+        System.out.println("nimm");
+    }
+
+    // Prüfen, ob Korn da ist
+    public boolean KornDa() {
+        boolean isKorn = false;
+        if (Territorium.getAnzahlKoerner(reihe, spalte)){
+            isKorn = true;
+        }
+        else {
+            isKorn = false;
+        }
+        return isKorn;
+    }
+
+    // Getter für die aktuelle Reihe
+    public int getReihe() {
+        return reihe;
+    }
+
+    // Getter für die aktuelle Spalte
+    public int getSpalte() {
+        return spalte;
+    }
+
+    // Getter für die aktuelle Blickrichtung
+    public int getBlickrichtung() {
+        return blickrichtung;
+    }
+}

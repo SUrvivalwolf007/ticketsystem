@@ -1,0 +1,27 @@
+body {
+    padding-bottom: 70px; /* Mehr Platz für Footer */
+    background-color: #f8f9fa; /* Leichter Hintergrund */
+}
+
+footer {
+   position: fixed;
+   bottom: 0;
+   width: 100%;
+   height: 60px;
+   line-height: 60px;
+   background-color: #e9ecef;
+   border-top: 1px solid #dee2e6;
+   padding: 0 1rem;
+}
+
+/* Badge Farben expliziter definieren */
+.badge.bg-warning { color: #000 !important; }
+.badge.bg-info { color: #000 !important; }
+.badge.bg-light { color: #000 !important; }
+
+/* Pflichtfeld Markierung */
+.is-required .form-label::after {
+    content: " *";
+    color: red;
+    margin-left: 2px;
+}

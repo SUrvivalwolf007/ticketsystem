@@ -1,0 +1,90 @@
+{# app/templates/tickets/view_ticket.html #}
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %} {# Makro importieren #}
+
+{% block content %}
+{# ... (Titelzeile und Hauptinformationen wie vorher) ... #}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>{{ title }} : {{ ticket.subject }}</h1>
+    <a href="{{ url_for('tickets.ticket_overview') }}" class="btn btn-secondary">Zurück zur Übersicht</a>
+</div>
+<hr>
+
+<div class="row">
+    {# Hauptinformationen zum Ticket (linke Spalte) #}
+    <div class="col-md-8">
+        {# ... (Card mit Beschreibung, Anydesk, Anhang wie vorher) ... #}
+        <div class="card">
+            <div class="card-header">Ticket Details</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ ticket.subject }}</h5>
+                <p class="card-text"><strong>Beschreibung:</strong></p>
+                <p style="white-space: pre-wrap;">{{ ticket.description }}</p>
+                <hr>
+                <p><strong>AnyDesk ID:</strong> {{ ticket.anydesk_id if ticket.anydesk_id else '-' }}</p>
+                <p><strong>Anhang:</strong>
+                    {% if ticket.attachment_path %}
+                        <a href="{{ url_for('static', filename='../instance/uploads/' + ticket.attachment_path) }}" target="_blank">{{ ticket.attachment_path }}</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+            </div>
+             <div class="card-footer text-muted">
+                Erstellt am: {{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }} |
+                Letzte Änderung: {{ ticket.updated_at.strftime('%d.%m.%Y %H:%M') }}
+            </div>
+        </div>
+
+        {# Untertickets (wie vorher) #}
+        {% if sub_tickets %}
+        <div class="mt-4">
+            <h4>Untertickets</h4>
+            {# ... (Liste der Untertickets wie vorher) ... #}
+        </div>
+        {% endif %}
+    </div>
+
+    {# Seitenleiste (rechte Spalte) - JETZT MIT FORMULAR #}
+    <div class="col-md-4">
+        {# Formular zum Bearbeiten von Status und Zuweisung #}
+        {# Das Formular wird zur selben URL (view_ticket) per POST geschickt #}
+        <form method="POST" action="{{ url_for('tickets.view_ticket', ticket_id=ticket.id) }}">
+            {{ edit_form.hidden_tag() }} {# CSRF Schutz #}
+            <div class="card">
+                <div class="card-header">
+                    Status & Zuweisung bearbeiten
+                </div>
+                <ul class="list-group list-group-flush">
+                    {# Status als Dropdown aus dem Formular rendern #}
+                    <li class="list-group-item">
+                         {{ render_field(edit_form.status) }}
+                    </li>
+                     {# Zugewiesen an als Dropdown aus dem Formular rendern #}
+                    <li class="list-group-item">
+                         {{ render_field(edit_form.assigned_to) }}
+                    </li>
+                    {# Statische Infos weiterhin anzeigen #}
+                    <li class="list-group-item">
+                        <strong>Erstellt von:</strong>
+                        <span class="float-end">{{ ticket.creator.username if ticket.creator else 'N/A' }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Antragsteller E-Mail:</strong>
+                        <span class="float-end">{{ ticket.requester_email }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Parent ID:</strong>
+                         <span class="float-end">{{ ticket.parent_id if ticket.parent_id else '-' }}</span>
+                    </li>
+                </ul>
+                <div class="card-footer">
+                    {# Submit Button aus dem Formular rendern #}
+                    {{ edit_form.submit(class="btn btn-primary w-100") }}
+                </div>
+            </div>
+        </form> {# Ende des Bearbeitungsformulars #}
+    </div>
+</div>
+
+{% endblock %}
